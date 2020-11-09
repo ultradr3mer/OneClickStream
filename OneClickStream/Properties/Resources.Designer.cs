@@ -84,5 +84,22 @@ namespace OneClickStream.Properties {
                 return ResourceManager.GetString("AzureMediaPlayer", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {
+        ///    &quot;settings&quot;: {
+        ///        &quot;bwtest&quot;: false,
+        ///        &quot;key&quot;: &quot;&lt;notused&gt;&quot;,
+        ///        &quot;server&quot;: &quot;{server}&quot;,
+        ///        &quot;use_auth&quot;: false
+        ///    },
+        ///    &quot;type&quot;: &quot;rtmp_custom&quot;
+        ///}.
+        /// </summary>
+        internal static string service {
+            get {
+                return ResourceManager.GetString("service", resourceCulture);
+            }
+        }
     }
 }
