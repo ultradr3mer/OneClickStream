@@ -48,6 +48,7 @@ namespace OneClickStream.Controllers
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public ContentResult Get(string source)
     {
       string html = Resources.AzureMediaPlayer;
