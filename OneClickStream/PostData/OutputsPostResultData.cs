@@ -4,8 +4,9 @@
   {
     #region Properties
 
-    public string EndpointDataSource { get; internal set; }
-    public string Id { get; internal set; }
+    public string EndpointDataSource { get; set; }
+    public string Id { get; set; }
+    public string Log { get; set; }
 
     #endregion Properties
   }

@@ -33,7 +33,6 @@ namespace OneClickStream.Services
         if (deleted)
         {
           sb.AppendLine("The LiveOutput and LiveEvent are now deleted.  The event is available as an archive and can still be streamed.");
-          sb.AppendLine("Press enter to finish cleanup...");
         }
         else
         {

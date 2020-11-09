@@ -122,7 +122,6 @@ namespace OneClickStream.Services
 
       sb.AppendLine("Start the live stream now, sending the input to the ingest url and verify that it is arriving with the preview url.");
       sb.AppendLine("IMPORTANT TIP!: Make ABSOLUTLEY CERTAIN that the video is flowing to the Preview URL before continuing!");
-      sb.AppendLine("Press enter to continue...");
       return new StartupPostResultData() { PreviewSource = previewSource, IngestUrl = ingestUrl };
     }
 

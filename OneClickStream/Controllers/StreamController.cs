@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OneClickStream.GetData;
 using OneClickStream.PostData;
 using OneClickStream.Properties;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace OneClickStream.Controllers
 {
+  [Authorize]
   [ApiController]
   [Route("[controller]")]
   public class StreamController : ControllerBase
