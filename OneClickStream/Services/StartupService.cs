@@ -5,8 +5,11 @@ using OneClickStream.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.XPath;
 
 namespace OneClickStream.Services
 {
@@ -30,7 +33,7 @@ namespace OneClickStream.Services
 
       try
       {
-        var client = await CreateMediaServicesClientAsync(this.config);
+        IAzureMediaServicesClient client = await CreateMediaServicesClientAsync(this.config);
 
         MediaService mediaService = await client.Mediaservices.GetAsync(this.config.ResourceGroup, this.config.AccountName);
         LiveEvent liveEvent = await this.CreateLiveEvent(this.liveEventName, client, mediaService, this.config, sb);
@@ -87,7 +90,6 @@ namespace OneClickStream.Services
       LiveEvent liveEvent = new LiveEvent(
           location: mediaService.Location,
           description: "Sample LiveEvent for testing",
-          //vanityUrl: false,
           encoding: new LiveEventEncoding(
                       encodingType: LiveEventEncodingType.None,
                       presetName: null
@@ -101,9 +103,36 @@ namespace OneClickStream.Services
       );
 
       sb.AppendLine($"Creating the LiveEvent, be patient this can take time...");
-      var result = await client.LiveEvents.CreateAsync(config.ResourceGroup, config.AccountName, liveEventName, liveEvent, autoStart: true);
-      
+      LiveEvent result = await client.LiveEvents.CreateAsync(config.ResourceGroup, config.AccountName, liveEventName, liveEvent, autoStart: true);
+
       return result;
+    }
+
+    internal async Task<CheckPreviewGetData> CheckPreview(string unification)
+    {
+      this.InitializeNames(unification);
+
+      IAzureMediaServicesClient client = await CreateMediaServicesClientAsync(this.config);
+
+      var liveEvent = await client.LiveEvents.GetAsync(this.config.ResourceGroup, this.config.AccountName, this.liveEventName);
+      string previewSource = liveEvent.Preview.Endpoints.First().Url;
+
+
+      using HttpClient httpClient = new HttpClient();
+
+      HttpResponseMessage response = await httpClient.GetAsync(previewSource);
+      if(response.StatusCode != System.Net.HttpStatusCode.OK)
+      {
+        return new CheckPreviewGetData { IsPreviewReady = false, IsInputReceived = false };
+      }
+      
+      string responseBody = await response.Content.ReadAsStringAsync();
+
+      var xdoc = XDocument.Parse(responseBody);
+      var videoChunksString = xdoc.XPathSelectElement("//StreamIndex[@Type='video']").Attribute("Chunks").Value;
+      var videoChunks = int.Parse(videoChunksString);
+
+      return new CheckPreviewGetData { IsPreviewReady = videoChunks > 0, IsInputReceived = true };
     }
 
     private StartupPostResultData SetupStream(LiveEvent liveEvent, StringBuilder sb)
@@ -113,7 +142,7 @@ namespace OneClickStream.Services
       sb.AppendLine($"\t{ingestUrl}");
       sb.AppendLine();
 
-      var previewSource = liveEvent.Preview.Endpoints.First().Url;
+      string previewSource = liveEvent.Preview.Endpoints.First().Url;
       sb.AppendLine($"The preview url is:");
       sb.AppendLine($"\t{previewSource}");
       sb.AppendLine();

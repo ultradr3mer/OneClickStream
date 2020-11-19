@@ -46,12 +46,6 @@ namespace OneClickStream.Controllers
       return await this.outputsSerrvice.CreateOutputs(id);
     }
 
-    [HttpGet("GetStreamUrls")]
-    public async Task<GetStreamUrlsData> GetStreamUrls(string id)
-    {
-      return await this.outputsSerrvice.GetPaths(id);
-    }
-
     [HttpGet]
     [AllowAnonymous]
     public ContentResult Get(string source)
@@ -65,6 +59,12 @@ namespace OneClickStream.Controllers
     public async Task<StartupPostResultData> Startup()
     {
       return await this.startupService.Startup();
+    }
+
+    [HttpGet("CheckPreview")]
+    public async Task<CheckPreviewGetData> CheckPreview(string id)
+    {
+      return await this.startupService.CheckPreview(id);
     }
 
     #endregion Methods

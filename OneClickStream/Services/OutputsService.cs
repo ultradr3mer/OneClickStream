@@ -29,38 +29,12 @@ namespace OneClickStream.Services
       try
       {
         IAzureMediaServicesClient client = await CreateMediaServicesClientAsync(this.config);
-
         var liveEvent = await client.LiveEvents.GetAsync(this.config.ResourceGroup, this.config.AccountName, liveEventName);
 
         Asset asset = await this.CreateLiveOutput(this.config, client, sb);
         StreamingEndpoint streamingEndpoint = await this.SetupStreamingEndpoint(this.config, client, asset, sb);
-      }
-      catch (ApiErrorException e)
-      {
-        sb.AppendLine("Hit ApiErrorException");
-        sb.AppendLine($"\tCode: {e.Body.Error.Code}");
-        sb.AppendLine($"\tCode: {e.Body.Error.Message}");
-        sb.AppendLine();
-        sb.AppendLine("Exiting, cleanup may be necessary...");
-      }
-
-      return new OutputsPostResultData() { Id = uniqueness, Log = sb.ToString() };
-    }
-
-    public async Task<GetStreamUrlsData> GetPaths(string uniqueness)
-    {
-      this.InitializeNames(uniqueness);
-
-      string playerPath = string.Empty;
-      StringBuilder sb = new StringBuilder();
-
-      try
-      {
-        IAzureMediaServicesClient client = await CreateMediaServicesClientAsync(this.config);
-
-        StreamingEndpoint streamingEndpoint = await client.StreamingEndpoints.GetAsync(this.config.ResourceGroup, this.config.AccountName, this.streamingEndpointName);
         ListPathsResponse paths = await client.StreamingLocators.ListPathsAsync(this.config.ResourceGroup, this.config.AccountName, this.streamingLocatorName);
-        bool hasStreamingPaths = this.GetStreamingPaths(streamingEndpoint, paths, out playerPath, out StringBuilder sbPaths);
+        bool hasStreamingPaths = this.GetStreamingPaths(streamingEndpoint, paths, out string playerPath, out StringBuilder sbPaths);
 
         if (hasStreamingPaths)
         {
@@ -85,7 +59,7 @@ namespace OneClickStream.Services
         sb.AppendLine("Exiting, cleanup may be necessary...");
       }
 
-      return new GetStreamUrlsData() { Id = uniqueness, EndpointDataSource = playerPath, Log = sb.ToString() };
+      return new OutputsPostResultData() { Id = uniqueness, Log = sb.ToString() };
     }
 
     private async Task<Asset> CreateLiveOutput(ConfigWrapper config, IAzureMediaServicesClient client, StringBuilder sb)

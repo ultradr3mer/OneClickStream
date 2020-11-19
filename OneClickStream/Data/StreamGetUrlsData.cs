@@ -1,6 +1,6 @@
 ﻿namespace OneClickStream.Data
 {
-  public class GetStreamUrlsData
+  public class StreamGetUrlsData
   {
     #region Properties
 

@@ -41,6 +41,14 @@
             &lt;div poster=&quot;&quot; tabindex=&quot;-1&quot; style=&quot;margin: 0px; padding: 0px; overflow: hidden; width: 100%; height: 100%; font-size: 921px;&quot; class=&quot;azuremediaplayer amp-big-play-cent [rest of string was truncated]&quot;;.
              </summary>
         </member>
+        <member name="P:OneClickStream.Properties.Resources.manifest">
+             <summary>
+               Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+            &lt;SmoothStreamingMedia IsLive=&quot;TRUE&quot; MajorVersion=&quot;2&quot; MinorVersion=&quot;2&quot; DVRWindowLength=&quot;26000&quot; Duration=&quot;0&quot; TimeScale=&quot;1000&quot; LookAheadFragmentCount=&quot;2&quot;&gt;
+               &lt;StreamIndex Chunks=&quot;5&quot; Type=&quot;video&quot; Url=&quot;QualityLevels({bitrate})/Fragments(video={start time})&quot; QualityLevels=&quot;1&quot; Subtype=&quot;&quot; Name=&quot;video&quot; TimeScale=&quot;1000&quot;&gt;
+                  &lt;QualityLevel Index=&quot;0&quot; Bitrate=&quot;2500000&quot; FourCC=&quot;AVC1&quot; MaxWidth=&quot;1920&quot; MaxHeight=&quot;1080&quot; CodecPrivateData=&quot;000000016764002AACD940780227E59A830303200000 [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
         <member name="P:OneClickStream.Properties.Resources.service">
              <summary>
                Looks up a localized string similar to {
