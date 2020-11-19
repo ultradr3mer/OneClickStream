@@ -26,6 +26,8 @@ namespace OneClickStream.Services
 
       StringBuilder sb = new StringBuilder();
 
+      string playerPath = string.Empty;
+
       try
       {
         IAzureMediaServicesClient client = await CreateMediaServicesClientAsync(this.config);
@@ -34,7 +36,7 @@ namespace OneClickStream.Services
         Asset asset = await this.CreateLiveOutput(this.config, client, sb);
         StreamingEndpoint streamingEndpoint = await this.SetupStreamingEndpoint(this.config, client, asset, sb);
         ListPathsResponse paths = await client.StreamingLocators.ListPathsAsync(this.config.ResourceGroup, this.config.AccountName, this.streamingLocatorName);
-        bool hasStreamingPaths = this.GetStreamingPaths(streamingEndpoint, paths, out string playerPath, out StringBuilder sbPaths);
+        bool hasStreamingPaths = this.GetStreamingPaths(streamingEndpoint, paths, out playerPath, out StringBuilder sbPaths);
 
         if (hasStreamingPaths)
         {
@@ -59,7 +61,7 @@ namespace OneClickStream.Services
         sb.AppendLine("Exiting, cleanup may be necessary...");
       }
 
-      return new OutputsPostResultData() { Id = uniqueness, Log = sb.ToString() };
+      return new OutputsPostResultData() { Id = uniqueness, Log = sb.ToString(), EndpointSource = playerPath };
     }
 
     private async Task<Asset> CreateLiveOutput(ConfigWrapper config, IAzureMediaServicesClient client, StringBuilder sb)
