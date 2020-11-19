@@ -1,4 +1,4 @@
-﻿namespace OneClickStream.GetData
+﻿namespace OneClickStream.Data
 {
   public class StartupPostResultData
   {

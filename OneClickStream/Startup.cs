@@ -73,7 +73,7 @@ namespace OneClickStream
       services.AddScoped<IAuthService, AuthService>();
       services.AddScoped<ConfigWrapper>();
       services.AddScoped<StartupService>();
-      services.AddScoped<OutputsSerrvice>();
+      services.AddScoped<OutputsService>();
       services.AddScoped<CleanupService>();
 
       services.AddSwaggerGen(setupAction =>

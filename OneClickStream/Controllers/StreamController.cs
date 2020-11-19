@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OneClickStream.GetData;
-using OneClickStream.PostData;
+using OneClickStream.Data;
 using OneClickStream.Properties;
 using OneClickStream.Services;
 using System.Threading.Tasks;
@@ -16,14 +15,14 @@ namespace OneClickStream.Controllers
     #region Fields
 
     private readonly CleanupService cleanupService;
-    private readonly OutputsSerrvice outputsSerrvice;
+    private readonly OutputsService outputsSerrvice;
     private readonly StartupService startupService;
 
     #endregion Fields
 
     #region Constructors
 
-    public StreamController(StartupService startupService, OutputsSerrvice outputsSerrvice, CleanupService cleanupService)
+    public StreamController(StartupService startupService, OutputsService outputsSerrvice, CleanupService cleanupService)
     {
       this.startupService = startupService;
       this.outputsSerrvice = outputsSerrvice;
@@ -45,6 +44,12 @@ namespace OneClickStream.Controllers
     public async Task<OutputsPostResultData> CreateOutputs(string id)
     {
       return await this.outputsSerrvice.CreateOutputs(id);
+    }
+
+    [HttpGet("GetStreamUrls")]
+    public async Task<GetStreamUrlsData> GetStreamUrls(string id)
+    {
+      return await this.outputsSerrvice.GetPaths(id);
     }
 
     [HttpGet]

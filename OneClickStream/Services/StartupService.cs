@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Management.Media;
 using Microsoft.Azure.Management.Media.Models;
 using OneClickStream.Configuration;
-using OneClickStream.GetData;
+using OneClickStream.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -101,7 +101,9 @@ namespace OneClickStream.Services
       );
 
       sb.AppendLine($"Creating the LiveEvent, be patient this can take time...");
-      return await client.LiveEvents.CreateAsync(config.ResourceGroup, config.AccountName, liveEventName, liveEvent, autoStart: true);
+      var result = await client.LiveEvents.CreateAsync(config.ResourceGroup, config.AccountName, liveEventName, liveEvent, autoStart: true);
+      
+      return result;
     }
 
     private StartupPostResultData SetupStream(LiveEvent liveEvent, StringBuilder sb)
@@ -121,7 +123,6 @@ namespace OneClickStream.Services
       sb.AppendLine();
 
       sb.AppendLine("Start the live stream now, sending the input to the ingest url and verify that it is arriving with the preview url.");
-      sb.AppendLine("IMPORTANT TIP!: Make ABSOLUTLEY CERTAIN that the video is flowing to the Preview URL before continuing!");
       return new StartupPostResultData() { PreviewSource = previewSource, IngestUrl = ingestUrl };
     }
 

@@ -1,19 +1,18 @@
-﻿using Microsoft.AspNetCore.Routing;
-using Microsoft.Azure.Management.Media;
+﻿using Microsoft.Azure.Management.Media;
 using Microsoft.Azure.Management.Media.Models;
 using OneClickStream.Configuration;
-using OneClickStream.PostData;
+using OneClickStream.Data;
 using System;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace OneClickStream.Services
 {
-  public class OutputsSerrvice : AzureMediaBaseService
+  public class OutputsService : AzureMediaBaseService
   {
     #region Constructors
 
-    public OutputsSerrvice(ConfigWrapper config) : base(config)
+    public OutputsService(ConfigWrapper config) : base(config)
     {
     }
 
@@ -25,21 +24,47 @@ namespace OneClickStream.Services
     {
       this.InitializeNames(uniqueness);
 
+      StringBuilder sb = new StringBuilder();
+
+      try
+      {
+        IAzureMediaServicesClient client = await CreateMediaServicesClientAsync(this.config);
+
+        var liveEvent = await client.LiveEvents.GetAsync(this.config.ResourceGroup, this.config.AccountName, liveEventName);
+
+        Asset asset = await this.CreateLiveOutput(this.config, client, sb);
+        StreamingEndpoint streamingEndpoint = await this.SetupStreamingEndpoint(this.config, client, asset, sb);
+      }
+      catch (ApiErrorException e)
+      {
+        sb.AppendLine("Hit ApiErrorException");
+        sb.AppendLine($"\tCode: {e.Body.Error.Code}");
+        sb.AppendLine($"\tCode: {e.Body.Error.Message}");
+        sb.AppendLine();
+        sb.AppendLine("Exiting, cleanup may be necessary...");
+      }
+
+      return new OutputsPostResultData() { Id = uniqueness, Log = sb.ToString() };
+    }
+
+    public async Task<GetStreamUrlsData> GetPaths(string uniqueness)
+    {
+      this.InitializeNames(uniqueness);
+
       string playerPath = string.Empty;
       StringBuilder sb = new StringBuilder();
 
       try
       {
-        var client = await CreateMediaServicesClientAsync(this.config);
+        IAzureMediaServicesClient client = await CreateMediaServicesClientAsync(this.config);
 
-        Asset asset = await this.CreateLiveOutput(this.config, client, sb);
-        StreamingEndpoint streamingEndpoint = await this.SetupStreamingEndpoint(this.config, client, asset, sb);
+        StreamingEndpoint streamingEndpoint = await client.StreamingEndpoints.GetAsync(this.config.ResourceGroup, this.config.AccountName, this.streamingEndpointName);
         ListPathsResponse paths = await client.StreamingLocators.ListPathsAsync(this.config.ResourceGroup, this.config.AccountName, this.streamingLocatorName);
-        this.GetStreamingPaths(streamingEndpoint, paths, out StringBuilder stringBuilder, out playerPath, out bool hasStreamingPaths, sb);
+        bool hasStreamingPaths = this.GetStreamingPaths(streamingEndpoint, paths, out playerPath, out StringBuilder sbPaths);
 
         if (hasStreamingPaths)
         {
-          sb.AppendLine(stringBuilder.ToString());
+          sb.AppendLine(sbPaths.ToString());
           sb.AppendLine("Open the following URL to playback the published,recording LiveOutput in the Azure Media Player");
           sb.AppendLine($"\t https://ampdemo.azureedge.net/?url={playerPath}&heuristicprofile=lowlatency");
           sb.AppendLine();
@@ -60,7 +85,7 @@ namespace OneClickStream.Services
         sb.AppendLine("Exiting, cleanup may be necessary...");
       }
 
-      return new OutputsPostResultData() { Id = uniqueness, EndpointDataSource = playerPath, Log = sb.ToString()  };
+      return new GetStreamUrlsData() { Id = uniqueness, EndpointDataSource = playerPath, Log = sb.ToString() };
     }
 
     private async Task<Asset> CreateLiveOutput(ConfigWrapper config, IAzureMediaServicesClient client, StringBuilder sb)
@@ -79,13 +104,15 @@ namespace OneClickStream.Services
       return asset;
     }
 
-    private void GetStreamingPaths(StreamingEndpoint streamingEndpoint, ListPathsResponse paths, out StringBuilder stringBuilder, out string playerPath, out bool hasStreamingPaths, StringBuilder sb)
+    private bool GetStreamingPaths(StreamingEndpoint streamingEndpoint, ListPathsResponse paths, out string playerPath, out StringBuilder sb)
     {
+      sb = new StringBuilder();
       sb.AppendLine("The urls to stream the output from a client:");
       sb.AppendLine();
-      stringBuilder = new StringBuilder();
       playerPath = string.Empty;
-      for (int i = 0; i < paths.StreamingPaths.Count; i++)
+      bool hasStreamingPaths = false;
+
+      foreach (StreamingPath path in paths.StreamingPaths)
       {
         UriBuilder uriBuilder = new UriBuilder
         {
@@ -93,21 +120,22 @@ namespace OneClickStream.Services
           Host = streamingEndpoint.HostName
         };
 
-        if (paths.StreamingPaths[i].Paths.Count > 0)
+        if (path.Paths.Count > 0)
         {
-          uriBuilder.Path = paths.StreamingPaths[i].Paths[0];
-          stringBuilder.AppendLine($"\t{paths.StreamingPaths[i].StreamingProtocol}-{paths.StreamingPaths[i].EncryptionScheme}");
-          stringBuilder.AppendLine($"\t\t{uriBuilder.ToString()}");
-          stringBuilder.AppendLine();
+          uriBuilder.Path = path.Paths[0];
+          sb.AppendLine($"\t{path.StreamingProtocol}-{path.EncryptionScheme}");
+          sb.AppendLine($"\t\t{uriBuilder}");
+          sb.AppendLine();
 
-          if (paths.StreamingPaths[i].StreamingProtocol == StreamingPolicyStreamingProtocol.Dash)
+          if (path.StreamingProtocol == StreamingPolicyStreamingProtocol.Dash)
           {
             playerPath = uriBuilder.ToString();
+            hasStreamingPaths = true;
           }
         }
       }
 
-      hasStreamingPaths = stringBuilder.Length > 0;
+      return hasStreamingPaths;
     }
 
     private async Task<StreamingEndpoint> SetupStreamingEndpoint(ConfigWrapper config, IAzureMediaServicesClient client, Asset asset, StringBuilder sb)
