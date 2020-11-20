@@ -48,11 +48,6 @@ namespace OneClickStream.Services
         sb.AppendLine();
         sb.AppendLine("Exiting, cleanup may be necessary...");
       }
-      finally
-      {
-        await this.CleanupLiveEventAndOutputAsync(client, config.ResourceGroup, config.AccountName, this.liveEventName, sb);
-        await this.CleanupLocatorandAssetAsync(client, config.ResourceGroup, config.AccountName, this.streamingLocatorName, this.assetName, sb);
-      }
     }
 
     private async Task<bool> CleanupLiveEventAndOutputAsync(IAzureMediaServicesClient client, string resourceGroup, string accountName, string liveEventName, StringBuilder sb)
